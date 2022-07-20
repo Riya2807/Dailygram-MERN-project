@@ -1,4 +1,5 @@
 //import { STATES } from 'mongoose'
+import { STATES } from 'mongoose'
 import React,{useState,useEffect} from 'react'
 //import {useContext} from '../../App'
 
@@ -14,9 +15,10 @@ const Home = ()=>{
             setData(result.post)
         })
     },[])
+    
     const likePost = (id)=>{
         fetch('/like',{
-            method:'put',
+            method:"put",
             headers:{
                 "Content-Type":"application/json",
                 "Authorization":"Bearer "+localStorage.getItem("jwt")
@@ -68,13 +70,61 @@ const Home = ()=>{
         })
     }
 
+    const makeComment = (text,postId)=>{
+        fetch('/comment',{
+            method:"put",
+            headers:{
+                "Content-Type":"application/json",
+                "Authorization":"Bearer "+localStorage.getItem("jwt")
+            },
+            body:JSON.stringify({
+                postId:postId,
+                text:text
+            })
+        }).then(res=>res.json())
+        .then(result=>{
+            console.log(result)
+            const newData = data.map(item=>{
+                if(item._id===result._id){
+                    return result
+                }
+                else{
+                    return item
+                }
+            })
+            setData(newData)
+        }).catch(err=>{
+            console.log(err)
+        })
+     }
+
+     const deletePost = (postid)=>{
+        fetch(`/deletepost/${postid}`,{
+            method:"delete",
+            headers:{
+                 Authorization:"Bearer "+localStorage.getItem("jwt")
+            }
+        }).then(res=>res.json())
+        .then(result=>{
+            console.log(result)
+            const newData = data.filter(item=>{
+                return item._id !== result._id
+            })
+            setData(newData)
+        })
+    }
+
     return(
         <div className='home'>
             {
                 data.map(item=>{
                     return(
                         <div className='card home-card'>
-                            <h5>{item.postedBy.name}</h5>
+                            <h5>{item.postedBy.name}<i className='material-icons' style={{
+                                float:"right"
+                            }}
+                            onClick={()=>deletePost(item._id)}
+                            >delete</i></h5>
                             <div className='card-image'>
                                 <img src={item.photo} />
                             </div>
@@ -89,8 +139,19 @@ const Home = ()=>{
                                 <h6>{item.likes.length} likes</h6>
                                 <h6>{item.title}</h6>
                                 <p>{item.body}</p>
-                                
-                                <input type="text" placeholder="Add a comment" />  
+                                {
+                                    item.comments.map(record=>{
+                                        return(
+                                            <h6><span style={{fontWeight:"500"}}>{record.postedBy.name}</span> {record.text}</h6>
+                                        )
+                                    })
+                                }
+                                <form onSubmit={(e)=>{
+                                    e.preventDefault()
+                                    makeComment(e.target[0].value,item._id)
+                                }}>
+                                    <input type='text' placeholder='Add a comment' />
+                                </form>
                                 
                                 
                                 
