@@ -29,7 +29,7 @@ const CreatePost = ()=>{
                     }
                     else{
                         M.toast({html:"Created post successfully",classes:"#43a047 green darken-1"})
-                        history.push('/')
+                        window.location.href="http://localhost:3000/"
                     }
                 }).catch(err=>{
                     console.log(err)
