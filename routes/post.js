@@ -16,6 +16,8 @@ router.get('/allpost',requireLogin,(req,res)=>{
     })
 })
 
+
+
 router.post('/createpost',requireLogin,(req,res)=>{
     const {title,body,pic} = req.body
     if(!title || !body || !pic){
@@ -38,7 +40,7 @@ router.post('/createpost',requireLogin,(req,res)=>{
 
 router.get('/mypost',requireLogin,(req,res)=>{
     Post.find({postedBy:req.user._id})
-    .populate('PostedBy','_id name')
+    .populate('postedBy','_id name')
     .then(mypost=>{
         res.json({mypost:mypost})
     })
@@ -52,7 +54,10 @@ router.put('/like',requireLogin,(req,res)=>{
         $push:{likes:req.user._id}
     },{
         new:true
-    }).exec((err,result)=>{
+    })
+    .populate("likes.postedBy","_id name")
+    .populate("postedBy","_id name")
+    .exec((err,result)=>{
         if(err){
             return res.status(422).json({error:err})
         }
@@ -67,7 +72,10 @@ router.put('/unlike',requireLogin,(req,res)=>{
         $pull:{likes:req.user._id}
     },{
         new:true
-    }).exec((err,result)=>{
+    })
+    .populate("likes.postedBy","_id name")
+    .populate("postedBy","_id name")
+    .exec((err,result)=>{
         if(err){
             return res.status(422).json({error:err})
         }
